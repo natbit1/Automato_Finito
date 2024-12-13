@@ -44,7 +44,7 @@ class Interface:
 
     def Widgets(self):
 
-        num_ests = 10
+        num_ests = 5
 
         self.ConfigJanela()
 
@@ -55,6 +55,9 @@ class Interface:
 
         frame_tab = Frame(frame_input, bg=self.cor_frames, highlightbackground=self.cor_bd_tab, highlightthickness=self.larg_bd_tab)
         frame_tab.place(relx=(1-self.lrel_cel_tab*(num_ests + 1))/2, rely=0.15, relwidth=self.lrel_cel_tab*(num_ests + 1), relheight=alt_frame_input)
+
+        frame_diag = Frame(self.janela, bg=self.cor_frames, highlightbackground=self.cor_bd_frames, highlightthickness=self.larg_bd_frames)
+        frame_diag.place(relx=0.302, rely=0, relwidth=0.698, relheight=1)
 
         lbl_alfa = Label(frame_input, text="Alfabeto", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
         lbl_alfa.place(relx=0.04, rely=0.02)
@@ -114,7 +117,7 @@ class Interface:
                     entry_func.grid(row=i, column=j, sticky=NSEW, padx=0.5, pady=0.5)
 
         rely_cb_est = rely_lbl_ests_aceit+0.06
-        marg_cb_frame = 0.7/num_ests
+        marg_cb_frame = 0.85/num_ests
         marg_rel_cb = (1 - 2*marg_cb_frame)/(num_ests-1)
 
         for i in range(num_ests):
@@ -128,7 +131,7 @@ class Interface:
             cb_est_2.place(relx=marg_cb_frame + i*marg_rel_cb, rely=marg_cb_est_2, anchor=CENTER)
 
         button_input = Button(frame_input, text="Gerar autômato")
-        button_input.place(relx=0.375, rely=marg_cb_est_2 + 0.05, relwidth=0.25)
+        button_input.place(relx=0.375, rely=marg_cb_est_2 + 0.06, relwidth=0.25)
 
         button_input = Button(frame_input, text="Processar")
         button_input.place(relx=0.7, rely=0.900, relwidth=0.25)
