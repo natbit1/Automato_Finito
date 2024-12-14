@@ -5,9 +5,8 @@ import tkinter as tk
 
 class Interface:
 
-    def __init__(self, interface):
+    def __init__(self):
         
-        self.interface = interface
         self.janela = Tk()
 
     def ConfigJanela(self):
@@ -50,7 +49,7 @@ class Interface:
 
         self.ConfigJanela()
 
-        #Frame do input
+        #Frames do input e do diagrama
 
         self.frame_input_1 = Frame(self.janela, bg=self.cor_frames, highlightbackground=self.cor_bd_frames, highlightthickness=self.larg_bd_frames)
         self.frame_input_1.place(relx=0, rely=0, relwidth=0.3, relheight=0.07)
@@ -69,10 +68,10 @@ class Interface:
         self.entry_alfa = Entry(self.frame_input_1, textvariable=entry_var1, font=(self.font_entries, self.tam_font_entries))
         self.entry_alfa.place(relx=0.2, rely=0.25, relwidth=0.27, relheight=0.5)
 
-        entry_var2 = tk.StringVar()
-        entry_var2.trace_add("write", self.Input2)
+        self.entry_var2 = tk.StringVar()
+        self.entry_var2.trace_add("write", self.Input2)
 
-        self.entry_num_ests = Entry(self.frame_input_1, textvariable=entry_var2, font=(self.font_entries, self.tam_font_entries))
+        self.entry_num_ests = Entry(self.frame_input_1, textvariable=self.entry_var2, font=(self.font_entries, self.tam_font_entries))
         self.entry_num_ests.place(relx=0.85, rely=0.25, relwidth=0.08, relheight=0.5)
 
         lbl_alfa = Label(self.frame_input_1, text="Alfabeto", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
@@ -94,8 +93,6 @@ class Interface:
 
         frame_tab = Frame(self.frame_input_2, bg=self.cor_frames, highlightbackground=self.cor_bd_tab, highlightthickness=self.larg_bd_tab)
         frame_tab.place(relx=(1-self.lrel_cel_tab*(self.num_ests + 1))/2, rely=0.09, relwidth=self.lrel_cel_tab*(self.num_ests + 1), relheight=alt_frame_tab)
-
-        self.frame_input_2_ant = self.frame_input_2
 
         for i in range(self.num_ests+1):
 
@@ -143,8 +140,10 @@ class Interface:
         self.entry_cadeia.place(relx=0.4, rely=0.904, relwidth=0.25, relheight=0.03)
 
         rely_cb_est = rely_lbl_ests_aceit+0.065
-        marg_cb_frame = 0.85/self.num_ests
-        marg_rel_cb = (1 - 2*marg_cb_frame)/(self.num_ests-1)
+        marg_cb_frame = 0.5/self.num_ests**(0.0755*self.num_ests)
+
+        if self.num_ests==1: marg_rel_cb=0
+        else: marg_rel_cb = (1 - 2*marg_cb_frame)/(self.num_ests-1)
 
         for i in range(self.num_ests):
 
@@ -166,23 +165,21 @@ class Interface:
 
         self.alfa = self.entry_alfa.get()
 
-        print(self.alfa)
-
     def Input2(self,*args):
 
         for widget in self.frame_input_2.winfo_children(): widget.destroy()
 
-        self.num_ests = self.entry_num_ests.get()
+        self.num_ests = self.entry_var2.get()
 
-        if self.num_ests!='': 
+        if self.num_ests!='' and int(self.num_ests)>0: 
             
             self.num_ests = int(self.num_ests)
             self.Widgets_Input_2()
 
     def Input3(self,*args):
 
-        self.var = self.entry_func.get()
+        self.var = self.entry_cadeia.get()
 
-        print(self.var)        
+        print(self.var)
 
-interface = Interface('USUARIO').Widgets_Input_1()
+interface = Interface().Widgets_Input_1()
