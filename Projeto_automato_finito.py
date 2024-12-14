@@ -55,8 +55,8 @@ class Interface:
         self.frame_input_1 = Frame(self.janela, bg=self.cor_frames, highlightbackground=self.cor_bd_frames, highlightthickness=self.larg_bd_frames)
         self.frame_input_1.place(relx=0, rely=0, relwidth=0.3, relheight=0.07)
 
-        self.frame_input_2_ant = Frame(self.janela, bg=self.cor_frames, highlightbackground=self.cor_bd_frames, highlightthickness=self.larg_bd_frames)
-        self.frame_input_2_ant.place(relx=0, rely=0.072, relwidth=0.3, relheight=0.928)
+        self.frame_input_2 = Frame(self.janela, bg=self.cor_frames, highlightbackground=self.cor_bd_frames, highlightthickness=self.larg_bd_frames)
+        self.frame_input_2.place(relx=0, rely=0.072, relwidth=0.3, relheight=0.928)
 
         frame_diag = Frame(self.janela, bg=self.cor_frames, highlightbackground=self.cor_bd_frames, highlightthickness=self.larg_bd_frames)
         frame_diag.place(relx=0.302, rely=0, relwidth=0.698, relheight=1)
@@ -80,18 +80,12 @@ class Interface:
 
         lbl_num_ests = Label(self.frame_input_1, text='Número de estados', bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
         lbl_num_ests.place(relx=0.52, rely=0.25)
-        
-        self.frame_tab_ant = Frame(self.frame_input_1, bg=self.cor_frames, highlightbackground=self.cor_bd_tab)
-        self.frame_tab_ant.place(relx=0, rely=0.102, relwidth=0.1, relheight=0.1)
 
         #Tabela
 
         self.janela.mainloop()
 
     def Widgets_Input_2(self):
-
-        self.frame_input_2 = Frame(self.janela, bg=self.cor_frames, highlightbackground=self.cor_bd_frames, highlightthickness=self.larg_bd_frames)
-        self.frame_input_2.place(relx=0, rely=0.072, relwidth=0.3, relheight=0.928)
 
         lbl_func = Label(self.frame_input_2, text="Função de transição", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
         lbl_func.place(relx=0.34, rely=0.04)
@@ -142,7 +136,10 @@ class Interface:
         lbl_cadeia = Label(self.frame_input_2, text="Cadeia de caracteres", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
         lbl_cadeia.place(relx=0.03, rely=0.9)
 
-        self.entry_cadeia = Entry(self.frame_input_2, font=(self.font_entries, self.tam_font_entries))
+        entry_var3 = tk.StringVar()
+        entry_var3.trace_add("write", self.Input3)
+        
+        self.entry_cadeia = Entry(self.frame_input_2, textvariable=entry_var3, font=(self.font_entries, self.tam_font_entries))
         self.entry_cadeia.place(relx=0.4, rely=0.904, relwidth=0.25, relheight=0.03)
 
         rely_cb_est = rely_lbl_ests_aceit+0.065
@@ -173,11 +170,16 @@ class Interface:
 
     def Input2(self,*args):
 
-        for widget in self.frame_input_2_ant.winfo_children(): widget.destroy()
+        for widget in self.frame_input_2.winfo_children(): widget.destroy()
 
         self.num_ests = int(self.entry_num_ests.get())
 
         self.Widgets_Input_2()
 
+    def Input3(self,*args):
+
+        self.var = self.entry_func.get()
+
+        print(self.var)        
 
 interface = Interface('USUARIO').Widgets_Input_1()
