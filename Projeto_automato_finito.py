@@ -133,10 +133,10 @@ class Interface:
         lbl_cadeia = Label(self.frame_input_2, text="Cadeia de caracteres", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
         lbl_cadeia.place(relx=0.03, rely=0.9)
 
-        entry_var3 = tk.StringVar()
-        entry_var3.trace_add("write", self.Input3)
+        self.entry_var3 = tk.StringVar()
+        self.entry_var3.trace_add("write", self.Input3)
         
-        self.entry_cadeia = Entry(self.frame_input_2, textvariable=entry_var3, font=(self.font_entries, self.tam_font_entries))
+        self.entry_cadeia = Entry(self.frame_input_2, textvariable=self.entry_var3, font=(self.font_entries, self.tam_font_entries))
         self.entry_cadeia.place(relx=0.4, rely=0.904, relwidth=0.25, relheight=0.03)
 
         rely_cb_est = rely_lbl_ests_aceit+0.065
@@ -178,7 +178,7 @@ class Interface:
 
     def Input3(self,*args):
 
-        self.var = self.entry_cadeia.get()
+        self.var = self.entry_var3.get()
 
         print(self.var)
 
