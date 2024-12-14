@@ -63,13 +63,13 @@ class Interface:
         #Entradas de dados
 
         entry_var1 = tk.StringVar()
-        entry_var1.trace_add("write", self.Input1)
+        entry_var1.trace_add("write", self.Ler_alfabeto)
 
         self.entry_alfa = Entry(self.frame_input_1, textvariable=entry_var1, font=(self.font_entries, self.tam_font_entries))
         self.entry_alfa.place(relx=0.2, rely=0.25, relwidth=0.27, relheight=0.5)
 
         self.entry_var2 = tk.StringVar()
-        self.entry_var2.trace_add("write", self.Input2)
+        self.entry_var2.trace_add("write", self.Ler_num_estados)
 
         self.entry_num_ests = Entry(self.frame_input_1, textvariable=self.entry_var2, font=(self.font_entries, self.tam_font_entries))
         self.entry_num_ests.place(relx=0.85, rely=0.25, relwidth=0.08, relheight=0.5)
@@ -94,9 +94,13 @@ class Interface:
         frame_tab = Frame(self.frame_input_2, bg=self.cor_frames, highlightbackground=self.cor_bd_tab, highlightthickness=self.larg_bd_tab)
         frame_tab.place(relx=(1-self.lrel_cel_tab*(self.num_ests + 1))/2, rely=0.09, relwidth=self.lrel_cel_tab*(self.num_ests + 1), relheight=alt_frame_tab)
 
+        self.tab_val_func = []
+
         for i in range(self.num_ests+1):
 
             frame_tab.rowconfigure(i, weight=1)
+
+            lin_val_func = []
 
             for j in range(self.num_ests+1):
 
@@ -119,8 +123,14 @@ class Interface:
 
                 else:
 
-                    self.entry_func = Entry(frame_tab, width=0, font=(self.font_entries, self.tam_font_entries))
+                    val_func = tk.StringVar()
+                    val_func.trace_add("write", self.Ler_tabela)
+                    lin_val_func.append(val_func)
+
+                    self.entry_func = Entry(frame_tab, width=0, textvariable=val_func, font=(self.font_entries, self.tam_font_entries))
                     self.entry_func.grid(row=i, column=j, sticky=NSEW, padx=0.5, pady=0.5)
+
+            if len(lin_val_func)>0: self.tab_val_func.append(lin_val_func)
 
         rely_lbl_ests_aceit = alt_frame_tab + 0.13
 
@@ -134,7 +144,7 @@ class Interface:
         lbl_cadeia.place(relx=0.03, rely=0.9)
 
         self.entry_var3 = tk.StringVar()
-        self.entry_var3.trace_add("write", self.Input3)
+        self.entry_var3.trace_add("write", self.Ler_cadeia)
         
         self.entry_cadeia = Entry(self.frame_input_2, textvariable=self.entry_var3, font=(self.font_entries, self.tam_font_entries))
         self.entry_cadeia.place(relx=0.4, rely=0.904, relwidth=0.25, relheight=0.03)
@@ -161,11 +171,11 @@ class Interface:
         button_input = Button(self.frame_input_2, text="Processar")
         button_input.place(relx=0.7, rely=0.900, relwidth=0.25)
 
-    def Input1(self,*args):
+    def Ler_alfabeto(self,*args):
 
         self.alfa = self.entry_alfa.get()
 
-    def Input2(self,*args):
+    def Ler_num_estados(self,*args):
 
         for widget in self.frame_input_2.winfo_children(): widget.destroy()
 
@@ -176,10 +186,12 @@ class Interface:
             self.num_ests = int(self.num_ests)
             self.Widgets_Input_2()
 
-    def Input3(self,*args):
+    def Ler_cadeia(self,*args):
 
-        self.var = self.entry_var3.get()
+        self.cadeia = self.entry_var3.get()
 
-        print(self.var)
+    def Ler_tabela(self,*args):
+
+        self.lista_vals_func = [[self.tab_val_func[i][j].get() for j in range(self.num_ests)] for i in range(self.num_ests)]
 
 interface = Interface().Widgets_Input_1()
