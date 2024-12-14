@@ -172,9 +172,12 @@ class Interface:
 
         for widget in self.frame_input_2.winfo_children(): widget.destroy()
 
-        self.num_ests = int(self.entry_num_ests.get())
+        self.num_ests = self.entry_num_ests.get()
 
-        self.Widgets_Input_2()
+        if self.num_ests!='': 
+            
+            self.num_ests = int(self.num_ests)
+            self.Widgets_Input_2()
 
     def Input3(self,*args):
 
