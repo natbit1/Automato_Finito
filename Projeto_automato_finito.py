@@ -2,12 +2,14 @@
 
 from tkinter import *
 import tkinter as tk
+from tkinter import messagebox
 
 class Interface:
 
     def __init__(self):
         
         self.janela = Tk()
+        self.lista_alfa_ant = ['']
 
     def ConfigJanela(self):
 
@@ -63,13 +65,13 @@ class Interface:
         #Entradas de dados
 
         entry_var1 = tk.StringVar()
-        entry_var1.trace_add("write", self.Ler_alfabeto)
+        entry_var1.trace_add("write", self.Ler_input_1)
 
         self.entry_alfa = Entry(self.frame_input_1, textvariable=entry_var1, font=(self.font_entries, self.tam_font_entries))
         self.entry_alfa.place(relx=0.2, rely=0.25, relwidth=0.27, relheight=0.5)
 
         self.entry_var2 = tk.StringVar()
-        self.entry_var2.trace_add("write", self.Ler_num_estados)
+        self.entry_var2.trace_add("write", self.Ler_input_1)
 
         self.entry_num_ests = Entry(self.frame_input_1, textvariable=self.entry_var2, font=(self.font_entries, self.tam_font_entries))
         self.entry_num_ests.place(relx=0.85, rely=0.25, relwidth=0.08, relheight=0.5)
@@ -92,7 +94,7 @@ class Interface:
         alt_frame_tab = self.lrel_cel_tab*(self.num_ests + 1)*self.frame_input_2.winfo_screenheight()/self.frame_input_2.winfo_screenwidth()
 
         frame_tab = Frame(self.frame_input_2, bg=self.cor_frames, highlightbackground=self.cor_bd_tab, highlightthickness=self.larg_bd_tab)
-        frame_tab.place(relx=(1-self.lrel_cel_tab*(self.num_ests + 1))/2, rely=0.09, relwidth=self.lrel_cel_tab*(self.num_ests + 1), relheight=alt_frame_tab)
+        frame_tab.place(relx=(1-self.lrel_cel_tab*(len(self.lista_alfa) + 1))/2, rely=0.09, relwidth=self.lrel_cel_tab*(len(self.lista_alfa) + 1), relheight=alt_frame_tab)
 
         self.tab_val_func = []
 
@@ -102,13 +104,13 @@ class Interface:
 
             lin_val_func = []
 
-            for j in range(self.num_ests+1):
+            for j in range(len(self.lista_alfa)+1):
 
                 frame_tab.columnconfigure(j, weight=1) 
                     
                 if i==0 and j>0: 
 
-                    lbl_func = Label(frame_tab, text='q'+ str(j-1), bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_lbl_tab, 'bold'))
+                    lbl_func = Label(frame_tab, text=self.lista_alfa[j-1], bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_lbl_tab, 'bold'))
                     lbl_func.grid(row=i, column=j, sticky=NSEW)
 
                 elif i>0 and j==0:
@@ -171,20 +173,47 @@ class Interface:
         button_input = Button(self.frame_input_2, text="Processar")
         button_input.place(relx=0.7, rely=0.900, relwidth=0.25)
 
-    def Ler_alfabeto(self,*args):
-
-        self.alfa = self.entry_alfa.get()
-
-    def Ler_num_estados(self,*args):
+    def Ler_input_1(self,*args):
 
         for widget in self.frame_input_2.winfo_children(): widget.destroy()
-
+        
+        self.alfa = self.entry_alfa.get()
         self.num_ests = self.entry_var2.get()
 
-        if self.num_ests!='' and int(self.num_ests)>0: 
+        if self.alfa!='':
+
+            num_virg_final = 0
+            i=-1
+
+            while self.alfa[i]==',':
+
+                num_virg_final+=1
+                i-=1
+
+        else: num_virg_final=0
+
+        self.alfa = self.alfa[0:len(self.alfa)-num_virg_final]
+        list_pos_virg = [a[0] for a in enumerate(self.alfa) if a[1]==',']
+
+        if num_virg_final%2==0: num_virg_final = int(num_virg_final/2)
+        else: num_virg_final = int((num_virg_final - 1)/2)
+
+        if len(list_pos_virg)>0: self.lista_alfa = [self.alfa[0:list_pos_virg[0]]] + [self.alfa[list_pos_virg[i]+1:list_pos_virg[i+1]] for i in range(len(list_pos_virg)-1)] + [self.alfa[list_pos_virg[-1]+1:len(self.alfa)]] + list(num_virg_final*',')
+        else: self.lista_alfa = [self.alfa]
+
+        self.lista_alfa_ant = self.lista_alfa
             
-            self.num_ests = int(self.num_ests)
-            self.Widgets_Input_2()
+        try:
+
+            if len(self.lista_alfa)!=len(set(self.lista_alfa)): raise ValueError("O alfabeto não deve conter símbolos repetidos!")
+            else:
+
+                if self.alfa!='' and self.num_ests!='' and int(self.num_ests)>0: 
+                    
+                    self.num_ests = int(self.num_ests)
+                    self.Widgets_Input_2()
+
+        except ValueError as ve: messagebox.showerror("Erro", f"Entrada incorreta: {ve}")
 
     def Ler_cadeia(self,*args):
 
