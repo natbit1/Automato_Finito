@@ -246,6 +246,7 @@ class Interface:
 
                     self.entry_alfa.delete(len(self.alfa)+1, tk.END)
                     self.Ler_input_1()
+
                     raise ValueError("vírgula não pode ser um símbolo do alfabeto! Ela deve ser usada somente para separar os símbolos")
 
                 #ERRO 3: a entrada para o número de estados não é um número inteiro positivo
@@ -253,9 +254,10 @@ class Interface:
                 if (self.num_ests!='' and self.num_ests.isdigit()==False) or (self.num_ests.isdigit()==True and int(self.num_ests)==0): 
                     
                     self.entry_num_ests.delete(0, tk.END)
+
                     raise ValueError("o número de estados do autômato deve ser inteiro positivo!")
 
-        except ValueError as ve: messagebox.showerror("Erro", f"Entrada incorreta: {ve}")
+        except ValueError as ve: messagebox.showerror("Erro", f"Entrada incorreta: {ve}") #Exibe o alerta de erro na tela
 
     def Ler_cadeia(self,*args):
 
@@ -272,26 +274,36 @@ class Interface:
             for j in range(len(self.tab_str_var[i])):
 
                 val_func = self.tab_str_var[i][j].get()
-                lin_val_func.append(val_func)
 
-                val_func = val_func.replace(' ','') #removendo os espaços vazios da string
+                #Tratamento de erros
 
                 try:
 
+                    #Se o dado inserido numa determinada célula da tabela for um estado, ele é guardado
+
                     if val_func in self.lista_ests or val_func=='': lin_val_func.append(val_func)
+
+                    #Caso contrário poderão ocorrer os seguintes erros
+
                     else: 
                         
+                        #Erro 1: se o dado inserido não for a letra q seguida de um número
+
                         if val_func[0]!='q' or (len(val_func)>1 and not val_func[1:len(val_func)].isdigit()): 
 
                             self.tab_entry[i][j].delete(0, tk.END)
+
                             raise ValueError("os estados devem ser compostos pela letra ""q"" seguida de um número!")
                         
+                        #Erro 2: se o dado corresponder a um estado inexistente
+
                         if len(val_func)>1 and val_func[1:len(val_func)].isdigit() and int(val_func[1:len(val_func)])>=self.num_ests: 
-                            
+
                             self.tab_entry[i][j].delete(0, tk.END)
+
                             raise ValueError("estado não existente! Os estados são de " + str(self.lista_ests[0]) + " até " + str(self.lista_ests[-1]))
 
-                except ValueError as ve: messagebox.showerror("Erro", f"Entrada incorreta: {ve}")
+                except ValueError as ve: messagebox.showerror("Erro", f"Entrada incorreta: {ve}") #Exibe o alerta de erro na tela
 
             tab_val_func.append(lin_val_func)
 
@@ -307,7 +319,7 @@ class Interface:
 
             for j in range(len(self.tab_entry[i])):
 
-                if i<len(tab_val_func_ant) and j<len(tab_val_func_ant[i]): self.tab_entry[i][j].insert(0, tab_val_func_ant[i][j])
+                if i<len(tab_val_func_ant) and j<len(tab_val_func_ant[i]) and tab_val_func_ant[i][j] in self.lista_ests: self.tab_entry[i][j].insert(0, tab_val_func_ant[i][j])
                 else: self.tab_entry[i][j].insert(0, '')
 
 interface = Interface().Widgets_Input_1()
