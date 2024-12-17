@@ -3,13 +3,14 @@
 from tkinter import *
 import tkinter as tk
 from tkinter import messagebox
+from itertools import chain
 
 class Interface:
 
     def __init__(self):
         
         self.janela = Tk()
-        self.lista_alfa_ant = ['']
+        self.tab_val_func_ant = [['']]
 
     def ConfigJanela(self):
 
@@ -96,13 +97,15 @@ class Interface:
         frame_tab = Frame(self.frame_input_2, bg=self.cor_frames, highlightbackground=self.cor_bd_tab, highlightthickness=self.larg_bd_tab)
         frame_tab.place(relx=(1-self.lrel_cel_tab*(len(self.lista_alfa) + 1))/2, rely=0.09, relwidth=self.lrel_cel_tab*(len(self.lista_alfa) + 1), relheight=alt_frame_tab)
 
-        self.tab_val_func = []
+        self.tab_str_var = []
+        self.tab_entry = []
 
         for i in range(self.num_ests+1):
 
             frame_tab.rowconfigure(i, weight=1)
 
-            lin_val_func = []
+            lin_str_var = []
+            lin_entry = []
 
             for j in range(len(self.lista_alfa)+1):
 
@@ -125,14 +128,19 @@ class Interface:
 
                 else:
 
-                    val_func = tk.StringVar()
-                    val_func.trace_add("write", self.Ler_tabela)
-                    lin_val_func.append(val_func)
+                    str_var = tk.StringVar()
+                    str_var.trace_add("write", self.Ler_tabela)
 
-                    self.entry_func = Entry(frame_tab, width=0, textvariable=val_func, font=(self.font_entries, self.tam_font_entries))
-                    self.entry_func.grid(row=i, column=j, sticky=NSEW, padx=0.5, pady=0.5)
+                    entry_func = Entry(frame_tab, width=0, textvariable=str_var, font=(self.font_entries, self.tam_font_entries))
+                    entry_func.grid(row=i, column=j, sticky=NSEW, padx=0.5, pady=0.5)
 
-            if len(lin_val_func)>0: self.tab_val_func.append(lin_val_func)
+                    lin_str_var.append(str_var)
+                    lin_entry.append(entry_func)
+
+            if i>0: 
+                
+                self.tab_str_var.append(lin_str_var)
+                self.tab_entry.append(lin_entry)
 
         rely_lbl_ests_aceit = alt_frame_tab + 0.13
 
@@ -157,28 +165,36 @@ class Interface:
         if self.num_ests==1: marg_rel_cb=0
         else: marg_rel_cb = (1 - 2*marg_cb_frame)/(self.num_ests-1)
 
+        self.lista_ests = ['q' + str(i) for i in range(self.num_ests)]
+
         for i in range(self.num_ests):
 
-            cb_est_1 = Checkbutton(self.frame_input_2, text='q'+str(i), bg=self.cor_frames, fg='white', selectcolor="black")
+            cb_est_1 = Checkbutton(self.frame_input_2, text=self.lista_ests[i], bg=self.cor_frames, fg='white', selectcolor="black")
             cb_est_1.place(relx=marg_cb_frame + i*marg_rel_cb, rely=rely_cb_est, anchor=CENTER)
 
-            marg_cb_est_2 = rely_cb_est+0.1
+            self.marg_cb_est_2 = rely_cb_est+0.1
 
-            cb_est_2 = Checkbutton(self.frame_input_2, text='q'+str(i), bg=self.cor_frames, fg='white', selectcolor="black")
-            cb_est_2.place(relx=marg_cb_frame + i*marg_rel_cb, rely=marg_cb_est_2, anchor=CENTER)
-
-        button_input = Button(self.frame_input_2, text="Gerar autômato")
-        button_input.place(relx=0.375, rely=marg_cb_est_2 + 0.06, relwidth=0.25)
+            cb_est_2 = Checkbutton(self.frame_input_2, text=self.lista_ests[i], bg=self.cor_frames, fg='white', selectcolor="black")
+            cb_est_2.place(relx=marg_cb_frame + i*marg_rel_cb, rely=self.marg_cb_est_2, anchor=CENTER)
 
         button_input = Button(self.frame_input_2, text="Processar")
         button_input.place(relx=0.7, rely=0.900, relwidth=0.25)
+
+    def Botao_input_2(self):
+
+        button_input = Button(self.frame_input_2, text="Gerar autômato")
+        button_input.place(relx=0.375, rely=self.marg_cb_est_2 + 0.06, relwidth=0.25)
 
     def Ler_input_1(self,*args):
 
         for widget in self.frame_input_2.winfo_children(): widget.destroy()
         
-        self.alfa = self.entry_alfa.get()
-        self.num_ests = self.entry_var2.get()
+        self.alfa = self.entry_alfa.get() #Pegando os símbolos inseridos pelo usuário
+        self.num_ests = self.entry_var2.get() #Pegando o número de estados inserido pelo usuário
+
+        self.alfa = self.alfa.replace(' ','') #removendo os espaços vazios
+
+        #Contando as vírgulas no final da string dos sínbolos
 
         if self.alfa!='':
 
@@ -192,26 +208,52 @@ class Interface:
 
         else: num_virg_final=0
 
-        self.alfa = self.alfa[0:len(self.alfa)-num_virg_final]
-        list_pos_virg = [a[0] for a in enumerate(self.alfa) if a[1]==',']
+        self.alfa = self.alfa[0:len(self.alfa)-num_virg_final] #Removendo as vírgulas no final da string
 
-        if num_virg_final%2==0: num_virg_final = int(num_virg_final/2)
-        else: num_virg_final = int((num_virg_final - 1)/2)
+        list_pos_virg = [a[0] for a in enumerate(self.alfa) if a[1]==','] #Guardando a posição das vírgulas que separam os símbolos
 
-        if len(list_pos_virg)>0: self.lista_alfa = [self.alfa[0:list_pos_virg[0]]] + [self.alfa[list_pos_virg[i]+1:list_pos_virg[i+1]] for i in range(len(list_pos_virg)-1)] + [self.alfa[list_pos_virg[-1]+1:len(self.alfa)]] + list(num_virg_final*',')
+        #Construindo a lista dos símbolos do alfabeto
+
+        if len(list_pos_virg)>0: self.lista_alfa = [self.alfa[0:list_pos_virg[0]]] + [self.alfa[list_pos_virg[i]+1:list_pos_virg[i+1]] for i in range(len(list_pos_virg)-1)] + [self.alfa[list_pos_virg[-1]+1:len(self.alfa)]]
         else: self.lista_alfa = [self.alfa]
 
-        self.lista_alfa_ant = self.lista_alfa
-            
+        #Tratamento de erros
+
         try:
 
-            if len(self.lista_alfa)!=len(set(self.lista_alfa)): raise ValueError("O alfabeto não deve conter símbolos repetidos!")
+            #Se os símbolos inseridos pelo usuário forem distintos e um número inteiro maior que zero for dado, a tabela da função de transição é construída
+
+            if self.alfa!='' and num_virg_final<2 and len(self.lista_alfa)==len(set(self.lista_alfa)) and (self.num_ests.isdigit()==True and int(self.num_ests)>0): 
+                
+                self.num_ests = int(self.num_ests)
+                self.Widgets_Input_2()
+                self.Auto_preencher_tab()
+                
+            #Caso contrário, o programa acusará os seguintes erros
+
             else:
 
-                if self.alfa!='' and self.num_ests!='' and int(self.num_ests)>0: 
+                #ERRO 1: símbolos repetidos
+
+                if num_virg_final==1 and len(self.lista_alfa)!=len(set(self.lista_alfa)): 
                     
-                    self.num_ests = int(self.num_ests)
-                    self.Widgets_Input_2()
+                    self.entry_alfa.delete(len(self.alfa), tk.END)
+                    raise ValueError("o alfabeto do autômato não deve conter símbolos repetidos!")
+                
+                #ERRO 2: vírgula como símbolo do alfabeto
+
+                if num_virg_final==2:
+
+                    self.entry_alfa.delete(len(self.alfa)+1, tk.END)
+                    self.Ler_input_1()
+                    raise ValueError("vírgula não pode ser um símbolo do alfabeto! Ela deve ser usada somente para separar os símbolos")
+
+                #ERRO 3: a entrada para o número de estados não é um número inteiro positivo
+
+                if (self.num_ests!='' and self.num_ests.isdigit()==False) or (self.num_ests.isdigit()==True and int(self.num_ests)==0): 
+                    
+                    self.entry_num_ests.delete(0, tk.END)
+                    raise ValueError("o número de estados do autômato deve ser inteiro positivo!")
 
         except ValueError as ve: messagebox.showerror("Erro", f"Entrada incorreta: {ve}")
 
@@ -221,6 +263,51 @@ class Interface:
 
     def Ler_tabela(self,*args):
 
-        self.lista_vals_func = [[self.tab_val_func[i][j].get() for j in range(self.num_ests)] for i in range(self.num_ests)]
+        tab_val_func = []
+
+        for i in range(len(self.tab_str_var)):
+
+            lin_val_func = []
+
+            for j in range(len(self.tab_str_var[i])):
+
+                val_func = self.tab_str_var[i][j].get()
+                lin_val_func.append(val_func)
+
+                val_func = val_func.replace(' ','') #removendo os espaços vazios da string
+
+                try:
+
+                    if val_func in self.lista_ests or val_func=='': lin_val_func.append(val_func)
+                    else: 
+                        
+                        if val_func[0]!='q' or (len(val_func)>1 and not val_func[1:len(val_func)].isdigit()): 
+
+                            self.tab_entry[i][j].delete(0, tk.END)
+                            raise ValueError("os estados devem ser compostos pela letra ""q"" seguida de um número!")
+                        
+                        if len(val_func)>1 and val_func[1:len(val_func)].isdigit() and int(val_func[1:len(val_func)])>=self.num_ests: 
+                            
+                            self.tab_entry[i][j].delete(0, tk.END)
+                            raise ValueError("estado não existente! Os estados são de " + str(self.lista_ests[0]) + " até " + str(self.lista_ests[-1]))
+
+                except ValueError as ve: messagebox.showerror("Erro", f"Entrada incorreta: {ve}")
+
+            tab_val_func.append(lin_val_func)
+
+        if '' not in list(chain(*tab_val_func)): self.Botao_input_2()
+
+        self.tab_val_func_ant = tab_val_func.copy()
+
+    def Auto_preencher_tab(self):
+
+        tab_val_func_ant = self.tab_val_func_ant.copy()
+
+        for i in range(len(self.tab_entry)):
+
+            for j in range(len(self.tab_entry[i])):
+
+                if i<len(tab_val_func_ant) and j<len(tab_val_func_ant[i]): self.tab_entry[i][j].insert(0, tab_val_func_ant[i][j])
+                else: self.tab_entry[i][j].insert(0, '')
 
 interface = Interface().Widgets_Input_1()
