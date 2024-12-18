@@ -194,7 +194,7 @@ class Interface:
         lbl_est_inicial.place(relx = marg_cm_bd*self.num_ests/(self.limit_est*lar_pixels_canva_cm), rely = self.rely_lbl_est_inicial, anchor='sw') #Posicionando label do estado inicial no canva
 
         self.coords_cm = [[],[]] #Inicializando lista das coordenadas dos círculos de marcação
-        self.val_logico_cb = [[],[]] #Inicializando lista de valor lógico dos círculos de marcação
+        self.val_logico_cm = [[],[]] #Inicializando lista de valor lógico dos círculos de marcação
         self.lista_ests = [] #Inicializando lista de estados
 
         for i in range(self.num_ests):
@@ -213,8 +213,8 @@ class Interface:
             
             self.coords_cm[0].append((x_esq_1, y_esq_1, x_dir_1, y_dir_1)) #Guardando as coordenadas do círculo de marcação do estado qi (estados de aceitação)
             self.coords_cm[1].append((x_esq_2, y_esq_2, x_dir_2, y_dir_2)) #Guardando as coordenadas do círculo de marcação do estado qi (estado inicial)
-            self.val_logico_cb[0].append(False) #Inicializando o valor lógico dos circulos de marcação (estados de aceitação)
-            self.val_logico_cb[1].append(False) #Inicializando o valor lógico dos circulos de marcação (estado inicial)
+            self.val_logico_cm[0].append(False) #Inicializando o valor lógico dos circulos de marcação (estados de aceitação)
+            self.val_logico_cm[1].append(False) #Inicializando o valor lógico dos circulos de marcação (estado inicial)
             self.lista_ests.append('q' + str(i)) #Guardando o estado qi
 
         self.canva_cm.bind("<Button-1>", self.SelecionarCB) #Ação de seleção do círculo de marcação
@@ -259,7 +259,7 @@ class Interface:
 
             #Se os símbolos inseridos pelo usuário forem distintos e um número inteiro maior que zero for dado, a tabela da função de transição é construída
 
-            if self.alfa!='' and num_virg_final<2 and len(self.lista_alfa)==len(set(self.lista_alfa)) and (self.num_ests.isdigit()==True and int(self.num_ests)>0): 
+            if self.alfa!='' and num_virg_final<2 and len(self.lista_alfa)==len(set(self.lista_alfa)) and (self.num_ests.isdigit()==True and (int(self.num_ests)>0 and int(self.num_ests)<=self.limit_est)): 
                 
                 self.num_ests = int(self.num_ests)
                 self.Widgets_Input_2()
@@ -274,6 +274,7 @@ class Interface:
                 if num_virg_final==1 and len(self.lista_alfa)!=len(set(self.lista_alfa)): 
                     
                     self.entry_alfa.delete(len(self.alfa)-1, tk.END)
+
                     raise ValueError("o alfabeto do autômato não deve conter símbolos repetidos!")
                 
                 #ERRO 2: vírgula como símbolo do alfabeto
@@ -290,14 +291,15 @@ class Interface:
 
                 #ERRO 3: número de símbolos acima do limite pré-definido
 
-                if len(self.lista_alfa)>self.limit_num_simbs:
+                if num_virg_final==1 and len(self.lista_alfa)>=self.limit_num_simbs:
 
-                    self.entry_alfa.delete(len(self.alfa)-2, tk.END)
+                    self.entry_alfa.delete(len(self.alfa), tk.END)
+
                     raise ValueError("O número de símbolos de alfabeto deve ser menor ou igual a " + str(self.limit_num_simbs) + "!")
 
                 #ERRO 4: a entrada para o número de estados não é um número inteiro positivo menor ou igual ao limite pré-definido
 
-                if (self.num_ests!='' and self.num_ests.isdigit()==False) or (self.num_ests.isdigit()==True and int(self.num_ests)==0) or (self.num_ests.isdigit()==True and int(self.num_ests)>self.limit_est): 
+                if (self.num_ests!='' and self.num_ests.isdigit()==False) or (self.num_ests.isdigit()==True and (int(self.num_ests)<1 or int(self.num_ests)>self.limit_est)): 
                     
                     self.entry_num_ests.delete(0, tk.END)
 
@@ -378,12 +380,12 @@ class Interface:
 
                 if x0 <= x <= x1 and y0 <= y <= y1: #se as coordenadas do botão esquerdo do mouse estiver sobre o círculo de marcação do estado qi
                 
-                    if self.val_logico_cb[0][i] == False: #e se o valor lógico dele for falso
+                    if self.val_logico_cm[0][i] == False: #e se o valor lógico dele for falso
 
-                        self.val_logico_cb[0][i] = True #ele muda para verdadeiro
+                        self.val_logico_cm[0][i] = True #ele muda para verdadeiro
                         self.Marcar_Desmarcar_Cm() #e a marcação no interior do checkbox aparece
 
-                    else: self.val_logico_cb[0][i] = False ##se o valor lógico for verdadeiro ele muda para falso
+                    else: self.val_logico_cm[0][i] = False ##se o valor lógico for verdadeiro ele muda para falso
 
                     self.Marcar_Desmarcar_Cm() #chamando a função para marcar/desmarcar o círculo
 
@@ -393,12 +395,12 @@ class Interface:
 
                 if x0 <= x <= x1 and y0 <= y <= y1: #se as coordenadas do botão esquerdo do mouse estiver sobre o círculo de marcação do estado qi
 
-                    if self.val_logico_cb[1][i] == False: #e se o valor lógico dele for falso
+                    if self.val_logico_cm[1][i] == False: #e se o valor lógico dele for falso
 
-                        self.val_logico_cb[1] = self.num_ests*[False] #todos os círculos de marcação são colocados em falso
-                        self.val_logico_cb[1][i] = True #e o circulo de marcação do estado qi é alterado para verdadeiro
+                        self.val_logico_cm[1] = self.num_ests*[False] #todos os círculos de marcação são colocados em falso
+                        self.val_logico_cm[1][i] = True #e o circulo de marcação do estado qi é alterado para verdadeiro
 
-                    else: self.val_logico_cb[1][i] = False ##se o valor lógico for verdadeiro ele muda para falso
+                    else: self.val_logico_cm[1][i] = False ##se o valor lógico for verdadeiro ele muda para falso
 
                     self.Marcar_Desmarcar_Cm() #chamando a função para marcar/desmarcar o círculo
 
@@ -407,13 +409,13 @@ class Interface:
         self.canva_cm.delete("all") #limpando o canva dos círculos de marcação
 
         self.coords_cm_2 = self.coords_cm[0] + self.coords_cm[1]
-        self.val_logico_cb_2 = self.val_logico_cb[0] + self.val_logico_cb[1]
+        self.val_logico_cm_2 = self.val_logico_cm[0] + self.val_logico_cm[1]
 
-        for i, (valor_logico, (x0, y0, x1, y1)) in enumerate(zip(self.val_logico_cb_2, self.coords_cm_2)):
+        for i, (valor_logico, (x0, y0, x1, y1)) in enumerate(zip(self.val_logico_cm_2, self.coords_cm_2)):
 
             self.canva_cm.create_oval(x0, y0, x1, y1, outline="black", width=0.5, fill="white" if valor_logico else "white") #Criando o círculo dos checkboxes
 
-            if valor_logico: #se o valor lógico de um checkbox for TRUE,
+            if valor_logico: #se o valor lógico de um círculo for TRUE,
 
                 #as coordenadas do centro do círculo são calculadas
 
@@ -423,6 +425,8 @@ class Interface:
 
                 self.canva_cm.create_oval(centro_cb_x - espaçamento, centro_cb_y - espaçamento, centro_cb_x + espaçamento, centro_cb_y + espaçamento, outline="black", width=0, fill="black") #e o círculo interno é criado com uma margem especificada
 
-    #def Diagrama(self):
+    def Diagrama(self):
+
+
 
 interface = Interface().Widgets_Input_1()
