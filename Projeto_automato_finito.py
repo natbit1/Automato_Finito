@@ -11,6 +11,8 @@ class Interface:
         
         self.janela = Tk()
         self.tab_val_func_ant = [['']]
+        self.limit_est = 10
+        self.limit_num_simbs = 10
 
     def ConfigJanela(self):
 
@@ -48,9 +50,19 @@ class Interface:
         self.lrel_cel_tab = 0.06
         self.tam_lbl_tab = 8
 
+        self.marg_canva_tabela = 0.12 #Margem do canva dos círculos de marcação em relação à tabela
+        self.rely_lbl_func_trans = 0.06 #Margem superior label função de transição
+        self.rely_lbl_est_inicial = 0.6 #Margem entre os círculos de marcação do estado inicial e dos estados de aceitação
+        self.marg_gadget_lbl = 0.02 #margem dos gadgets em relação aos respectivos títulos
+        self.diam_checkbox = 0.019 #diâmetro dos círculos de marcação
+        self.marg_lbl_cm = 0.006 #Margem das labels em relação aos respectivos círculos de marcação
+
     def Widgets_Input_1(self):
 
         self.ConfigJanela()
+
+        self.alt_pixels_jan = self.janela.winfo_screenheight() #Altura do frame da tabela em pixels
+        self.lar_pixels_jan = self.janela.winfo_screenwidth() #Largura do frame da tabela em pixels
 
         #Frames do input e do diagrama
 
@@ -90,12 +102,13 @@ class Interface:
     def Widgets_Input_2(self):
 
         lbl_func = Label(self.frame_input_2, text="Função de transição", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
-        lbl_func.place(relx=0.34, rely=0.04)
+        lbl_func.place(relx=0.34, rely=self.rely_lbl_func_trans, anchor='sw')
 
-        alt_frame_tab = self.lrel_cel_tab*(self.num_ests + 1)*self.frame_input_2.winfo_screenheight()/self.frame_input_2.winfo_screenwidth()
+        lar_frame_tab = self.lrel_cel_tab*(len(self.lista_alfa) + 1)
+        alt_frame_tab = self.lrel_cel_tab*(self.num_ests + 1)*self.alt_pixels_jan/self.lar_pixels_jan
 
         frame_tab = Frame(self.frame_input_2, bg=self.cor_frames, highlightbackground=self.cor_bd_tab, highlightthickness=self.larg_bd_tab)
-        frame_tab.place(relx=(1-self.lrel_cel_tab*(len(self.lista_alfa) + 1))/2, rely=0.09, relwidth=self.lrel_cel_tab*(len(self.lista_alfa) + 1), relheight=alt_frame_tab)
+        frame_tab.place(relx=(1-self.lrel_cel_tab*(len(self.lista_alfa) + 1))/2, rely=self.rely_lbl_func_trans + self.marg_gadget_lbl, relwidth=lar_frame_tab, relheight=alt_frame_tab, anchor='nw')
 
         self.tab_str_var = []
         self.tab_entry = []
@@ -142,14 +155,6 @@ class Interface:
                 self.tab_str_var.append(lin_str_var)
                 self.tab_entry.append(lin_entry)
 
-        rely_lbl_ests_aceit = alt_frame_tab + 0.13
-
-        lbl_ests_aceit = Label(self.frame_input_2, text="Selecionar estados de aceitação", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
-        lbl_ests_aceit.place(relx=0.04, rely=rely_lbl_ests_aceit)
-
-        lbl_ests_aceit = Label(self.frame_input_2, text="Selecionar estado inicial", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
-        lbl_ests_aceit.place(relx=0.04, rely=rely_lbl_ests_aceit+0.1)
-
         lbl_cadeia = Label(self.frame_input_2, text="Cadeia de caracteres", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
         lbl_cadeia.place(relx=0.03, rely=0.9)
 
@@ -159,31 +164,65 @@ class Interface:
         self.entry_cadeia = Entry(self.frame_input_2, textvariable=self.entry_var3, font=(self.font_entries, self.tam_font_entries))
         self.entry_cadeia.place(relx=0.4, rely=0.904, relwidth=0.25, relheight=0.03)
 
-        rely_cb_est = rely_lbl_ests_aceit+0.065
+        """rely_cb_est = rely_lbl_ests_aceit+0.065
         marg_cb_frame = 0.5/self.num_ests**(0.0755*self.num_ests)
 
         if self.num_ests==1: marg_rel_cb=0
-        else: marg_rel_cb = (1 - 2*marg_cb_frame)/(self.num_ests-1)
+        else: marg_rel_cb = (1 - 2*marg_cb_frame)/(self.num_ests-1)"""
 
-        self.lista_ests = ['q' + str(i) for i in range(self.num_ests)]
+        #---------------------
+
+        lar_pixels_canva_cm = self.lar_pixels_jan*0.297 #Largura do canva em pixels
+        alt_pixels_canva_cm = self.alt_pixels_jan*0.24 #Altura do canva em pixels
+
+        self.canva_cm = Canvas(self.frame_input_2, width = lar_pixels_canva_cm, height = alt_pixels_canva_cm, bg=self.cor_frames, highlightthickness = 0) #Canva dos círculos de marcação
+
+        lbl_ests_aceit = Label(self.canva_cm, text="Estados de aceitação", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Label estados de aceitação
+        lbl_est_inicial = Label(self.canva_cm, text="Estado inicial", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Label estado inicial
+        
+        self.canva_cm.place(relx = 0.0, rely = alt_frame_tab + self.marg_canva_tabela) #Posicionando o canva dos círculos de marcação na janela
+
+        lbl_est_final = Label(self.canva_cm, text="q" + str(self.num_ests-1), bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Criando a label do estado final para obter o seu tamanho em pixels 
+        
+        self.marg_gadget_lbl_pixels = self.marg_gadget_lbl*self.alt_pixels_jan
+        self.diam_pixels_checkbox = self.diam_checkbox*self.alt_pixels_jan #diâmetro dos círculos de marcação em pixels
+
+        marg_cm_bd = (lar_pixels_canva_cm - self.diam_pixels_checkbox)/(2*self.num_ests) #Margem em pixels dos círculos de marcação extremos em relação à borda do canva
+        marg_cm = (lar_pixels_canva_cm - self.num_ests*self.diam_pixels_checkbox - 2*marg_cm_bd - self.marg_lbl_cm - lbl_est_final.winfo_reqwidth())/(self.num_ests-int(self.num_ests>1)) #Margem entre os círculos de marcação
+
+        lbl_ests_aceit.place(relx = marg_cm_bd*self.num_ests/(self.limit_est*lar_pixels_canva_cm), rely = 0.15, anchor='sw') #Posicionando label dos estados de aceitação no canva
+        lbl_est_inicial.place(relx = marg_cm_bd*self.num_ests/(self.limit_est*lar_pixels_canva_cm), rely = self.rely_lbl_est_inicial, anchor='sw') #Posicionando label do estado inicial no canva
+
+        self.coords_cm = [[],[]] #Inicializando lista das coordenadas dos círculos de marcação
+        self.val_logico_cb = [[],[]] #Inicializando lista de valor lógico dos círculos de marcação
+        self.lista_ests = [] #Inicializando lista de estados
 
         for i in range(self.num_ests):
 
-            cb_est_1 = Checkbutton(self.frame_input_2, text=self.lista_ests[i], bg=self.cor_frames, fg='white', selectcolor="black")
-            cb_est_1.place(relx=marg_cb_frame + i*marg_rel_cb, rely=rely_cb_est, anchor=CENTER)
+            x_esq_1, y_esq_1 = marg_cm_bd + i*self.diam_pixels_checkbox + i*marg_cm, 0.15*alt_pixels_canva_cm + self.marg_gadget_lbl_pixels #coordenadas em pixels do ponto esquerdo superior do círculo de marcação do estado qi (estados de aceitação)
+            x_dir_1, y_dir_1 = x_esq_1 + self.diam_pixels_checkbox, y_esq_1 + self.diam_pixels_checkbox #coordenadas em pixels do ponto direito inferior do círculo de marcação do estado qi (estados de aceitação)
 
-            self.marg_cb_est_2 = rely_cb_est+0.1
+            x_esq_2, y_esq_2 = marg_cm_bd + i*self.diam_pixels_checkbox + i*marg_cm, self.rely_lbl_est_inicial*alt_pixels_canva_cm + self.marg_gadget_lbl_pixels  #coordenadas em pixels do ponto esquerdo superior do círculo de marcação do estado qi (estado inicial)
+            x_dir_2, y_dir_2 = x_esq_2 + self.diam_pixels_checkbox, y_esq_2 + self.diam_pixels_checkbox #coordenadas em pixels do ponto direito inferior do círculo de marcação do estado qi (estado inicial)
+                
+            lbl_est_1 = Label(self.canva_cm, text="q" + str(i), bd=0, bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Label do estado qi
+            lbl_est_2 = Label(self.canva_cm, text="q" + str(i), bd=0, bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Label do estado qi
 
-            cb_est_2 = Checkbutton(self.frame_input_2, text=self.lista_ests[i], bg=self.cor_frames, fg='white', selectcolor="black")
-            cb_est_2.place(relx=marg_cb_frame + i*marg_rel_cb, rely=self.marg_cb_est_2, anchor=CENTER)
+            lbl_est_1.place(relx=x_dir_1/lar_pixels_canva_cm + self.marg_lbl_cm, rely = (y_esq_1 + y_dir_1)/(2*alt_pixels_canva_cm), anchor="w") #Posicionando label do estado qi ao lado direito do respectivo círculo de marcação
+            lbl_est_2.place(relx=x_dir_2/lar_pixels_canva_cm + self.marg_lbl_cm, rely = (y_esq_2 + y_dir_2)/(2*alt_pixels_canva_cm), anchor="w") #Posicionando label do estado qi ao lado direito do respectivo círculo de marcação
+            
+            self.coords_cm[0].append((x_esq_1, y_esq_1, x_dir_1, y_dir_1)) #Guardando as coordenadas do círculo de marcação do estado qi (estados de aceitação)
+            self.coords_cm[1].append((x_esq_2, y_esq_2, x_dir_2, y_dir_2)) #Guardando as coordenadas do círculo de marcação do estado qi (estado inicial)
+            self.val_logico_cb[0].append(False) #Inicializando o valor lógico dos circulos de marcação (estados de aceitação)
+            self.val_logico_cb[1].append(False) #Inicializando o valor lógico dos circulos de marcação (estado inicial)
+            self.lista_ests.append('q' + str(i)) #Guardando o estado qi
+
+        self.canva_cm.bind("<Button-1>", self.SelecionarCB) #Ação de seleção do círculo de marcação
+        
+        self.Marcar_Desmarcar_Cm()
 
         button_input = Button(self.frame_input_2, text="Processar")
         button_input.place(relx=0.7, rely=0.900, relwidth=0.25)
-
-    def Botao_input_2(self):
-
-        button_input = Button(self.frame_input_2, text="Gerar autômato")
-        button_input.place(relx=0.375, rely=self.marg_cb_est_2 + 0.06, relwidth=0.25)
 
     def Ler_input_1(self,*args):
 
@@ -199,16 +238,13 @@ class Interface:
         if self.alfa!='':
 
             num_virg_final = 0
-            i=-1
 
-            while self.alfa[i]==',':
+            while self.alfa!='' and self.alfa[-1]==',':
 
                 num_virg_final+=1
-                i-=1
+                self.alfa = self.alfa[0:-1]
 
         else: num_virg_final=0
-
-        self.alfa = self.alfa[0:len(self.alfa)-num_virg_final] #Removendo as vírgulas no final da string
 
         list_pos_virg = [a[0] for a in enumerate(self.alfa) if a[1]==','] #Guardando a posição das vírgulas que separam os símbolos
 
@@ -237,25 +273,35 @@ class Interface:
 
                 if num_virg_final==1 and len(self.lista_alfa)!=len(set(self.lista_alfa)): 
                     
-                    self.entry_alfa.delete(len(self.alfa), tk.END)
+                    self.entry_alfa.delete(len(self.alfa)-1, tk.END)
                     raise ValueError("o alfabeto do autômato não deve conter símbolos repetidos!")
                 
                 #ERRO 2: vírgula como símbolo do alfabeto
 
-                if num_virg_final==2:
+                if (self.alfa=='' and num_virg_final==1) or (self.alfa!='' and num_virg_final==2):
 
-                    self.entry_alfa.delete(len(self.alfa)+1, tk.END)
-                    self.Ler_input_1()
+                    if self.alfa=='': self.entry_alfa.delete(0, tk.END)
+                    else:
+
+                        self.entry_alfa.delete(len(self.alfa)+1, tk.END)
+                        self.Ler_input_1()
 
                     raise ValueError("vírgula não pode ser um símbolo do alfabeto! Ela deve ser usada somente para separar os símbolos")
 
-                #ERRO 3: a entrada para o número de estados não é um número inteiro positivo
+                #ERRO 3: número de símbolos acima do limite pré-definido
 
-                if (self.num_ests!='' and self.num_ests.isdigit()==False) or (self.num_ests.isdigit()==True and int(self.num_ests)==0): 
+                if len(self.lista_alfa)>self.limit_num_simbs:
+
+                    self.entry_alfa.delete(len(self.alfa)-2, tk.END)
+                    raise ValueError("O número de símbolos de alfabeto deve ser menor ou igual a " + str(self.limit_num_simbs) + "!")
+
+                #ERRO 4: a entrada para o número de estados não é um número inteiro positivo
+
+                if (self.num_ests!='' and self.num_ests.isdigit()==False) or (self.num_ests.isdigit()==True and int(self.num_ests)==0) or (self.num_ests.isdigit()==True and int(self.num_ests)>self.limit_est): 
                     
                     self.entry_num_ests.delete(0, tk.END)
 
-                    raise ValueError("o número de estados do autômato deve ser inteiro positivo!")
+                    raise ValueError("o número de estados do autômato deve ser um inteiro positivo menor ou igual a " + str(self.limit_est) + "!")
 
         except ValueError as ve: messagebox.showerror("Erro", f"Entrada incorreta: {ve}") #Exibe o alerta de erro na tela
 
@@ -307,7 +353,7 @@ class Interface:
 
             tab_val_func.append(lin_val_func)
 
-        if '' not in list(chain(*tab_val_func)): self.Botao_input_2()
+        #if '' not in list(chain(*tab_val_func)): self.Diagrama()
 
         self.tab_val_func_ant = tab_val_func.copy()
 
@@ -321,5 +367,62 @@ class Interface:
 
                 if i<len(tab_val_func_ant) and j<len(tab_val_func_ant[i]) and tab_val_func_ant[i][j] in self.lista_ests: self.tab_entry[i][j].insert(0, tab_val_func_ant[i][j])
                 else: self.tab_entry[i][j].insert(0, '')
+
+    def SelecionarCB(self, evento): #Essa função permite que a seleção do círculo seja feita com o mouse
+
+            x, y = evento.x, evento.y #capturando as coordenadas do botão esquerdo do mouse ao ser pressionado
+
+            #SELEÇÃO DOS ESTADOS DE ACEITAÇÃO 
+
+            for i, (x0, y0, x1, y1) in enumerate(self.coords_cm[0]): 
+
+                if x0 <= x <= x1 and y0 <= y <= y1: #se as coordenadas do botão esquerdo do mouse estiver sobre o círculo de marcação do estado qi
+                
+                    if self.val_logico_cb[0][i] == False: #e se o valor lógico dele for falso
+
+                        self.val_logico_cb[0][i] = True #ele muda para verdadeiro
+                        self.Marcar_Desmarcar_Cm() #e a marcação no interior do checkbox aparece
+
+                    else: self.val_logico_cb[0][i] = False ##se o valor lógico for verdadeiro ele muda para falso
+
+                    self.Marcar_Desmarcar_Cm() #chamando a função para marcar/desmarcar o círculo
+
+            #SELEÇÃO DO ESTADO INICIAL
+
+            for i, (x0, y0, x1, y1) in enumerate(self.coords_cm[1]): 
+
+                if x0 <= x <= x1 and y0 <= y <= y1: #se as coordenadas do botão esquerdo do mouse estiver sobre o círculo de marcação do estado qi
+
+                    if self.val_logico_cb[1][i] == False: #e se o valor lógico dele for falso
+
+                        self.val_logico_cb[1] = self.num_ests*[False] #todos os círculos de marcação são colocados em falso
+                        self.val_logico_cb[1][i] = True #e o circulo de marcação do estado qi é alterado para verdadeiro
+
+                    else: self.val_logico_cb[1][i] = False ##se o valor lógico for verdadeiro ele muda para falso
+
+                    self.Marcar_Desmarcar_Cm() #chamando a função para marcar/desmarcar o círculo
+
+    def Marcar_Desmarcar_Cm(self): #Essa função cria/deleta a marcação no interior do círculo quando ele é selecionado
+
+        self.canva_cm.delete("all") #limpando o canva dos círculos de marcação
+
+        self.coords_cm_2 = self.coords_cm[0] + self.coords_cm[1]
+        self.val_logico_cb_2 = self.val_logico_cb[0] + self.val_logico_cb[1]
+
+        for i, (valor_logico, (x0, y0, x1, y1)) in enumerate(zip(self.val_logico_cb_2, self.coords_cm_2)):
+
+            self.canva_cm.create_oval(x0, y0, x1, y1, outline="black", width=2, fill="white" if valor_logico else "white") #Criando o círculo dos checkboxes
+
+            if valor_logico: #se o valor lógico de um checkbox for TRUE,
+
+                #as coordenadas do centro do círculo são calculadas
+
+                centro_cb_x = (x0 + x1) / 2 
+                centro_cb_y = (y0 + y1) / 2
+                espaçamento = 6
+
+                self.canva_cm.create_oval(centro_cb_x - espaçamento, centro_cb_y - espaçamento, centro_cb_x + espaçamento, centro_cb_y + espaçamento, outline="black", width=0, fill="black") #e o círculo interno é criado com uma margem especificada
+
+    #def Diagrama(self):
 
 interface = Interface().Widgets_Input_1()
