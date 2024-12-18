@@ -55,7 +55,7 @@ class Interface:
         self.rely_lbl_est_inicial = 0.6 #Margem entre os círculos de marcação do estado inicial e dos estados de aceitação
         self.marg_gadget_lbl = 0.02 #margem dos gadgets em relação aos respectivos títulos
         self.diam_checkbox = 0.019 #diâmetro dos círculos de marcação
-        self.marg_lbl_cm = 0.006 #Margem das labels em relação aos respectivos círculos de marcação
+        self.marg_lbl_cm = 0.004 #Margem das labels em relação aos respectivos círculos de marcação
 
     def Widgets_Input_1(self):
 
@@ -184,11 +184,11 @@ class Interface:
 
         lbl_est_final = Label(self.canva_cm, text="q" + str(self.num_ests-1), bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Criando a label do estado final para obter o seu tamanho em pixels 
         
-        self.marg_gadget_lbl_pixels = self.marg_gadget_lbl*self.alt_pixels_jan
-        self.diam_pixels_checkbox = self.diam_checkbox*self.alt_pixels_jan #diâmetro dos círculos de marcação em pixels
+        self.marg_gadget_lbl_pixels = self.marg_gadget_lbl*self.alt_pixels_jan #Margem entre os gadgets e os títulos
+        self.diam_pixels_cm = self.diam_checkbox*self.alt_pixels_jan #diâmetro dos círculos de marcação em pixels
 
-        marg_cm_bd = (lar_pixels_canva_cm - self.diam_pixels_checkbox)/(2*self.num_ests) #Margem em pixels dos círculos de marcação extremos em relação à borda do canva
-        marg_cm = (lar_pixels_canva_cm - self.num_ests*self.diam_pixels_checkbox - 2*marg_cm_bd - self.marg_lbl_cm - lbl_est_final.winfo_reqwidth())/(self.num_ests-int(self.num_ests>1)) #Margem entre os círculos de marcação
+        marg_cm_bd = (lar_pixels_canva_cm - self.diam_pixels_cm)/(2*self.num_ests) #Margem em pixels dos círculos de marcação extremos em relação à borda do canva
+        marg_cm = (lar_pixels_canva_cm - self.num_ests*self.diam_pixels_cm - 2*marg_cm_bd - self.marg_lbl_cm - lbl_est_final.winfo_reqwidth())/(self.num_ests-int(self.num_ests>1)) #Margem entre os círculos de marcação
 
         lbl_ests_aceit.place(relx = marg_cm_bd*self.num_ests/(self.limit_est*lar_pixels_canva_cm), rely = 0.15, anchor='sw') #Posicionando label dos estados de aceitação no canva
         lbl_est_inicial.place(relx = marg_cm_bd*self.num_ests/(self.limit_est*lar_pixels_canva_cm), rely = self.rely_lbl_est_inicial, anchor='sw') #Posicionando label do estado inicial no canva
@@ -199,11 +199,11 @@ class Interface:
 
         for i in range(self.num_ests):
 
-            x_esq_1, y_esq_1 = marg_cm_bd + i*self.diam_pixels_checkbox + i*marg_cm, 0.15*alt_pixels_canva_cm + self.marg_gadget_lbl_pixels #coordenadas em pixels do ponto esquerdo superior do círculo de marcação do estado qi (estados de aceitação)
-            x_dir_1, y_dir_1 = x_esq_1 + self.diam_pixels_checkbox, y_esq_1 + self.diam_pixels_checkbox #coordenadas em pixels do ponto direito inferior do círculo de marcação do estado qi (estados de aceitação)
+            x_esq_1, y_esq_1 = int(marg_cm_bd + i*(self.diam_pixels_cm + marg_cm)), int(0.15*alt_pixels_canva_cm + self.marg_gadget_lbl_pixels) #coordenadas em pixels do ponto esquerdo superior do círculo de marcação do estado qi (estados de aceitação)
+            x_dir_1, y_dir_1 = int(x_esq_1 + self.diam_pixels_cm), int(y_esq_1 + self.diam_pixels_cm) #coordenadas em pixels do ponto direito inferior do círculo de marcação do estado qi (estados de aceitação)
 
-            x_esq_2, y_esq_2 = marg_cm_bd + i*self.diam_pixels_checkbox + i*marg_cm, self.rely_lbl_est_inicial*alt_pixels_canva_cm + self.marg_gadget_lbl_pixels  #coordenadas em pixels do ponto esquerdo superior do círculo de marcação do estado qi (estado inicial)
-            x_dir_2, y_dir_2 = x_esq_2 + self.diam_pixels_checkbox, y_esq_2 + self.diam_pixels_checkbox #coordenadas em pixels do ponto direito inferior do círculo de marcação do estado qi (estado inicial)
+            x_esq_2, y_esq_2 = int(x_esq_1), int(self.rely_lbl_est_inicial*alt_pixels_canva_cm + self.marg_gadget_lbl_pixels) #coordenadas em pixels do ponto esquerdo superior do círculo de marcação do estado qi (estado inicial)
+            x_dir_2, y_dir_2 = int(x_esq_2 + self.diam_pixels_cm), int(y_esq_2 + self.diam_pixels_cm) #coordenadas em pixels do ponto direito inferior do círculo de marcação do estado qi (estado inicial)
                 
             lbl_est_1 = Label(self.canva_cm, text="q" + str(i), bd=0, bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Label do estado qi
             lbl_est_2 = Label(self.canva_cm, text="q" + str(i), bd=0, bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Label do estado qi
@@ -218,7 +218,7 @@ class Interface:
             self.lista_ests.append('q' + str(i)) #Guardando o estado qi
 
         self.canva_cm.bind("<Button-1>", self.SelecionarCB) #Ação de seleção do círculo de marcação
-        
+
         self.Marcar_Desmarcar_Cm()
 
         button_input = Button(self.frame_input_2, text="Processar")
@@ -295,7 +295,7 @@ class Interface:
                     self.entry_alfa.delete(len(self.alfa)-2, tk.END)
                     raise ValueError("O número de símbolos de alfabeto deve ser menor ou igual a " + str(self.limit_num_simbs) + "!")
 
-                #ERRO 4: a entrada para o número de estados não é um número inteiro positivo
+                #ERRO 4: a entrada para o número de estados não é um número inteiro positivo menor ou igual ao limite pré-definido
 
                 if (self.num_ests!='' and self.num_ests.isdigit()==False) or (self.num_ests.isdigit()==True and int(self.num_ests)==0) or (self.num_ests.isdigit()==True and int(self.num_ests)>self.limit_est): 
                     
@@ -411,7 +411,7 @@ class Interface:
 
         for i, (valor_logico, (x0, y0, x1, y1)) in enumerate(zip(self.val_logico_cb_2, self.coords_cm_2)):
 
-            self.canva_cm.create_oval(x0, y0, x1, y1, outline="black", width=2, fill="white" if valor_logico else "white") #Criando o círculo dos checkboxes
+            self.canva_cm.create_oval(x0, y0, x1, y1, outline="black", width=0.5, fill="white" if valor_logico else "white") #Criando o círculo dos checkboxes
 
             if valor_logico: #se o valor lógico de um checkbox for TRUE,
 
@@ -419,7 +419,7 @@ class Interface:
 
                 centro_cb_x = (x0 + x1) / 2 
                 centro_cb_y = (y0 + y1) / 2
-                espaçamento = 6
+                espaçamento = 5.4
 
                 self.canva_cm.create_oval(centro_cb_x - espaçamento, centro_cb_y - espaçamento, centro_cb_x + espaçamento, centro_cb_y + espaçamento, outline="black", width=0, fill="black") #e o círculo interno é criado com uma margem especificada
 
