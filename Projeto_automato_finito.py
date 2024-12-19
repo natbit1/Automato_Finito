@@ -54,7 +54,7 @@ class Interface:
         self.rely_lbl_func_trans = 0.06 #Margem superior label função de transição
         self.rely_lbl_est_inicial = 0.6 #Margem entre os círculos de marcação do estado inicial e dos estados de aceitação
         self.marg_gadget_lbl = 0.02 #margem dos gadgets em relação aos respectivos títulos
-        self.diam_checkbox = 0.019 #diâmetro dos círculos de marcação
+        self.diam_cm = 0.019 #diâmetro dos círculos de marcação
         self.marg_lbl_cm = 0.004 #Margem das labels em relação aos respectivos círculos de marcação
 
     def Widgets_Input_1(self):
@@ -185,7 +185,7 @@ class Interface:
         lbl_est_final = Label(self.canva_cm, text="q" + str(self.num_ests-1), bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Criando a label do estado final para obter o seu tamanho em pixels 
         
         self.marg_gadget_lbl_pixels = self.marg_gadget_lbl*self.alt_pixels_jan #Margem entre os gadgets e os títulos
-        self.diam_pixels_cm = self.diam_checkbox*self.alt_pixels_jan #diâmetro dos círculos de marcação em pixels
+        self.diam_pixels_cm = self.diam_cm*self.alt_pixels_jan #diâmetro dos círculos de marcação em pixels
 
         marg_cm_bd = (lar_pixels_canva_cm - self.diam_pixels_cm)/(2*self.num_ests) #Margem em pixels dos círculos de marcação extremos em relação à borda do canva
         marg_cm = (lar_pixels_canva_cm - self.num_ests*self.diam_pixels_cm - 2*marg_cm_bd - self.marg_lbl_cm - lbl_est_final.winfo_reqwidth())/(self.num_ests-int(self.num_ests>1)) #Margem entre os círculos de marcação
@@ -259,7 +259,7 @@ class Interface:
 
             #Se os símbolos inseridos pelo usuário forem distintos e um número inteiro maior que zero for dado, a tabela da função de transição é construída
 
-            if self.alfa!='' and num_virg_final<2 and len(self.lista_alfa)==len(set(self.lista_alfa)) and (self.num_ests.isdigit()==True and (int(self.num_ests)>0 and int(self.num_ests)<=self.limit_est)): 
+            if self.alfa!='' and len(self.lista_alfa)==len(set(self.lista_alfa)) and ((len(self.lista_alfa)==self.limit_num_simbs and num_virg_final==0) or (len(self.lista_alfa)<self.limit_num_simbs and num_virg_final<2)) and (self.num_ests.isdigit()==True and (int(self.num_ests)>0 and int(self.num_ests)<=self.limit_est)): 
                 
                 self.num_ests = int(self.num_ests)
                 self.Widgets_Input_2()
@@ -294,6 +294,7 @@ class Interface:
                 if num_virg_final==1 and len(self.lista_alfa)>=self.limit_num_simbs:
 
                     self.entry_alfa.delete(len(self.alfa), tk.END)
+                    self.Ler_input_1()
 
                     raise ValueError("O número de símbolos de alfabeto deve ser menor ou igual a " + str(self.limit_num_simbs) + "!")
 
@@ -421,12 +422,8 @@ class Interface:
 
                 centro_cb_x = (x0 + x1) / 2 
                 centro_cb_y = (y0 + y1) / 2
-                espaçamento = 5.4
+                espaçamento = 5.49
 
                 self.canva_cm.create_oval(centro_cb_x - espaçamento, centro_cb_y - espaçamento, centro_cb_x + espaçamento, centro_cb_y + espaçamento, outline="black", width=0, fill="black") #e o círculo interno é criado com uma margem especificada
-
-    def Diagrama(self):
-
-
 
 interface = Interface().Widgets_Input_1()
