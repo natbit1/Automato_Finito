@@ -2,8 +2,10 @@
 
 from tkinter import *
 import tkinter as tk
+import math
 from tkinter import messagebox
 from itertools import chain
+from collections import Counter
 
 class Interface:
 
@@ -13,24 +15,19 @@ class Interface:
         self.tab_val_func_ant = [['']]
         self.limit_est = 10
         self.limit_num_simbs = 10
+        self.list_est_conect = []
 
     def ConfigJanela(self):
 
-        self.indice_diag = 0 #indice tela inicial para dados do diagrama
-        fator_tela = 0.898 #Porcentagem visível da altura da tela (sem a barra de tarefas do Windows)
-
-        self.lar_tela_pxls = self.janela.winfo_screenwidth() #Largura da tela em pixels
-        self.alt_tela_pxls = self.janela.winfo_screenheight() #Altura da tela em pixels
-
-        self.lar_jan_pxls = int(self.lar_tela_pxls) #Largura da janela em pixels
-        self.alt_jan_pxls = int(fator_tela*self.alt_tela_pxls) #Altura da janela em pixels
+        self.alt_pixels_jan = self.janela.winfo_screenheight() #Altura do frame da tabela em pixels
+        self.lar_pixels_jan = self.janela.winfo_screenwidth() #Largura do frame da tabela em pixels
         
         self.janela.title("Autômato finito")
         self.janela.configure(background = '#211954')
-        self.janela.geometry(str(self.lar_jan_pxls) + "x" + str(self.alt_jan_pxls))
+        self.janela.geometry(str(self.lar_pixels_jan) + "x" + str(self.alt_pixels_jan))
         self.janela.resizable(False, False)
 
-        ajust_hor_tela = -int(self.alt_tela_pxls) // 90
+        ajust_hor_tela = -int(self.alt_pixels_jan) // 90
 
         self.janela.geometry("+{}+{}".format(ajust_hor_tela, 0))
 
@@ -40,15 +37,15 @@ class Interface:
 
         self.font_labels = 'arial'
         self.cor_labels = 'white'
-        self.tam_labels = 10
+        self.tam_labels = int(0.014*self.alt_pixels_jan)
 
         self.font_entries = 'arial'
-        self.tam_font_entries = 10
+        self.tam_font_entries = int(0.014*self.alt_pixels_jan)
 
-        self.larg_bd_tab = 1
+        self.larg_bd_tab = int(0.002*self.alt_pixels_jan)
         self.cor_bd_tab = 'white'
         self.lrel_cel_tab = 0.06
-        self.tam_lbl_tab = 8
+        self.tam_lbl_tab = int(0.012*self.alt_pixels_jan)
 
         self.marg_canva_tabela = 0.12 #Margem do canva dos círculos de marcação em relação à tabela
         self.rely_lbl_func_trans = 0.06 #Margem superior label função de transição
@@ -57,12 +54,14 @@ class Interface:
         self.diam_cm = 0.019 #diâmetro dos círculos de marcação
         self.marg_lbl_cm = 0.004 #Margem das labels em relação aos respectivos círculos de marcação
 
+        self.diam_circ_est_ext = int(0.09*self.alt_pixels_jan)
+        self.diam_circ_est_int = int(0.033*self.alt_pixels_jan)
+        self.tam_lbl_est_circ = int(0.015*self.alt_pixels_jan)
+        self.cor_circ_est = 'white' #cor dos círculos dos estados
+
     def Widgets_Input_1(self):
 
         self.ConfigJanela()
-
-        self.alt_pixels_jan = self.janela.winfo_screenheight() #Altura do frame da tabela em pixels
-        self.lar_pixels_jan = self.janela.winfo_screenwidth() #Largura do frame da tabela em pixels
 
         #Frames do input e do diagrama
 
@@ -72,8 +71,8 @@ class Interface:
         self.frame_input_2 = Frame(self.janela, bg=self.cor_frames, highlightbackground=self.cor_bd_frames, highlightthickness=self.larg_bd_frames)
         self.frame_input_2.place(relx=0, rely=0.072, relwidth=0.3, relheight=0.928)
 
-        frame_diag = Frame(self.janela, bg=self.cor_frames, highlightbackground=self.cor_bd_frames, highlightthickness=self.larg_bd_frames)
-        frame_diag.place(relx=0.302, rely=0, relwidth=0.698, relheight=1)
+        self.frame_diag = Frame(self.janela, bg=self.cor_frames, highlightbackground=self.cor_bd_frames, highlightthickness=self.larg_bd_frames)
+        self.frame_diag.place(relx=0.302, rely=0, relwidth=0.698, relheight=1)
 
         #Entradas de dados
 
@@ -110,51 +109,6 @@ class Interface:
         frame_tab = Frame(self.frame_input_2, bg=self.cor_frames, highlightbackground=self.cor_bd_tab, highlightthickness=self.larg_bd_tab)
         frame_tab.place(relx=(1-self.lrel_cel_tab*(len(self.lista_alfa) + 1))/2, rely=self.rely_lbl_func_trans + self.marg_gadget_lbl, relwidth=lar_frame_tab, relheight=alt_frame_tab, anchor='nw')
 
-        self.tab_str_var = []
-        self.tab_entry = []
-
-        for i in range(self.num_ests+1):
-
-            frame_tab.rowconfigure(i, weight=1)
-
-            lin_str_var = []
-            lin_entry = []
-
-            for j in range(len(self.lista_alfa)+1):
-
-                frame_tab.columnconfigure(j, weight=1) 
-                    
-                if i==0 and j>0: 
-
-                    lbl_func = Label(frame_tab, text=self.lista_alfa[j-1], bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_lbl_tab, 'bold'))
-                    lbl_func.grid(row=i, column=j, sticky=NSEW)
-
-                elif i>0 and j==0:
-            
-                    lbl_func = Label(frame_tab, text='q'+ str(i-1), bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_lbl_tab, 'bold'))
-                    lbl_func.grid(row=i, column=j, sticky=NSEW)
-
-                elif i==0 and j==0:
-
-                    frame_space = Label(frame_tab, text="", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_lbl_tab, 'bold'))
-                    frame_space.grid(row=i, column=j, sticky=NSEW)
-
-                else:
-
-                    str_var = tk.StringVar()
-                    str_var.trace_add("write", self.Ler_tabela)
-
-                    entry_func = Entry(frame_tab, width=0, textvariable=str_var, font=(self.font_entries, self.tam_font_entries))
-                    entry_func.grid(row=i, column=j, sticky=NSEW, padx=0.5, pady=0.5)
-
-                    lin_str_var.append(str_var)
-                    lin_entry.append(entry_func)
-
-            if i>0: 
-                
-                self.tab_str_var.append(lin_str_var)
-                self.tab_entry.append(lin_entry)
-
         lbl_cadeia = Label(self.frame_input_2, text="Cadeia de caracteres", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold'))
         lbl_cadeia.place(relx=0.03, rely=0.9)
 
@@ -163,14 +117,6 @@ class Interface:
         
         self.entry_cadeia = Entry(self.frame_input_2, textvariable=self.entry_var3, font=(self.font_entries, self.tam_font_entries))
         self.entry_cadeia.place(relx=0.4, rely=0.904, relwidth=0.25, relheight=0.03)
-
-        """rely_cb_est = rely_lbl_ests_aceit+0.065
-        marg_cb_frame = 0.5/self.num_ests**(0.0755*self.num_ests)
-
-        if self.num_ests==1: marg_rel_cb=0
-        else: marg_rel_cb = (1 - 2*marg_cb_frame)/(self.num_ests-1)"""
-
-        #---------------------
 
         lar_pixels_canva_cm = self.lar_pixels_jan*0.297 #Largura do canva em pixels
         alt_pixels_canva_cm = self.alt_pixels_jan*0.24 #Altura do canva em pixels
@@ -195,27 +141,69 @@ class Interface:
 
         self.coords_cm = [[],[]] #Inicializando lista das coordenadas dos círculos de marcação
         self.val_logico_cm = [[],[]] #Inicializando lista de valor lógico dos círculos de marcação
-        self.lista_ests = [] #Inicializando lista de estados
+        self.tab_str_var = []
+        self.tab_entry = []
+        self.lista_ests = []
 
-        for i in range(self.num_ests):
+        for i in range(self.num_ests+1):
 
-            x_esq_1, y_esq_1 = int(marg_cm_bd + i*(self.diam_pixels_cm + marg_cm)), int(0.15*alt_pixels_canva_cm + self.marg_gadget_lbl_pixels) #coordenadas em pixels do ponto esquerdo superior do círculo de marcação do estado qi (estados de aceitação)
-            x_dir_1, y_dir_1 = int(x_esq_1 + self.diam_pixels_cm), int(y_esq_1 + self.diam_pixels_cm) #coordenadas em pixels do ponto direito inferior do círculo de marcação do estado qi (estados de aceitação)
+            frame_tab.rowconfigure(i, weight=1)
 
-            x_esq_2, y_esq_2 = int(x_esq_1), int(self.rely_lbl_est_inicial*alt_pixels_canva_cm + self.marg_gadget_lbl_pixels) #coordenadas em pixels do ponto esquerdo superior do círculo de marcação do estado qi (estado inicial)
-            x_dir_2, y_dir_2 = int(x_esq_2 + self.diam_pixels_cm), int(y_esq_2 + self.diam_pixels_cm) #coordenadas em pixels do ponto direito inferior do círculo de marcação do estado qi (estado inicial)
-                
-            lbl_est_1 = Label(self.canva_cm, text="q" + str(i), bd=0, bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Label do estado qi
-            lbl_est_2 = Label(self.canva_cm, text="q" + str(i), bd=0, bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Label do estado qi
+            lin_str_var = []
+            lin_entry = []
 
-            lbl_est_1.place(relx=x_dir_1/lar_pixels_canva_cm + self.marg_lbl_cm, rely = (y_esq_1 + y_dir_1)/(2*alt_pixels_canva_cm), anchor="w") #Posicionando label do estado qi ao lado direito do respectivo círculo de marcação
-            lbl_est_2.place(relx=x_dir_2/lar_pixels_canva_cm + self.marg_lbl_cm, rely = (y_esq_2 + y_dir_2)/(2*alt_pixels_canva_cm), anchor="w") #Posicionando label do estado qi ao lado direito do respectivo círculo de marcação
+            for j in range(len(self.lista_alfa)+1):
+
+                frame_tab.columnconfigure(j, weight=1) 
+                    
+                if i==0 and j>0: 
+
+                    lbl_func = Label(frame_tab, text=self.lista_alfa[j-1], bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_lbl_tab, 'bold'))
+                    lbl_func.grid(row=i, column=j, sticky=NSEW)
+
+                elif i>0 and j==0:
             
-            self.coords_cm[0].append((x_esq_1, y_esq_1, x_dir_1, y_dir_1)) #Guardando as coordenadas do círculo de marcação do estado qi (estados de aceitação)
-            self.coords_cm[1].append((x_esq_2, y_esq_2, x_dir_2, y_dir_2)) #Guardando as coordenadas do círculo de marcação do estado qi (estado inicial)
-            self.val_logico_cm[0].append(False) #Inicializando o valor lógico dos circulos de marcação (estados de aceitação)
-            self.val_logico_cm[1].append(False) #Inicializando o valor lógico dos circulos de marcação (estado inicial)
-            self.lista_ests.append('q' + str(i)) #Guardando o estado qi
+                    lbl_func = Label(frame_tab, text='q'+ str(i-1), bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_lbl_tab, 'bold'))
+                    lbl_func.grid(row=i, column=j, sticky=NSEW)
+                    self.lista_ests.append('q'+str(i-1))
+
+                elif i==0 and j==0:
+
+                    frame_space = Label(frame_tab, text="", bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_lbl_tab, 'bold'))
+                    frame_space.grid(row=i, column=j, sticky=NSEW)
+
+                else:
+
+                    str_var = tk.StringVar()
+                    str_var.trace_add("write", self.Ler_tabela)
+
+                    entry_func = Entry(frame_tab, width=0, textvariable=str_var, font=(self.font_entries, self.tam_font_entries))
+                    entry_func.grid(row=i, column=j, sticky=NSEW, padx=0.5, pady=0.5)
+
+                    lin_str_var.append(str_var)
+                    lin_entry.append(entry_func)
+
+            if i>0: 
+                
+                self.tab_str_var.append(lin_str_var)
+                self.tab_entry.append(lin_entry)
+
+                x_esq_1, y_esq_1 = int(marg_cm_bd + (i-1)*(self.diam_pixels_cm + marg_cm)), int(0.15*alt_pixels_canva_cm + self.marg_gadget_lbl_pixels) #coordenadas em pixels do ponto esquerdo superior do círculo de marcação do estado qi (estados de aceitação)
+                x_dir_1, y_dir_1 = int(x_esq_1 + self.diam_pixels_cm), int(y_esq_1 + self.diam_pixels_cm) #coordenadas em pixels do ponto direito inferior do círculo de marcação do estado qi (estados de aceitação)
+
+                x_esq_2, y_esq_2 = int(x_esq_1), int(self.rely_lbl_est_inicial*alt_pixels_canva_cm + self.marg_gadget_lbl_pixels) #coordenadas em pixels do ponto esquerdo superior do círculo de marcação do estado qi (estado inicial)
+                x_dir_2, y_dir_2 = int(x_esq_2 + self.diam_pixels_cm), int(y_esq_2 + self.diam_pixels_cm) #coordenadas em pixels do ponto direito inferior do círculo de marcação do estado qi (estado inicial)
+                    
+                lbl_est_1 = Label(self.canva_cm, text="q" + str(i-1), bd=0, bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Label do estado qi
+                lbl_est_2 = Label(self.canva_cm, text="q" + str(i-1), bd=0, bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_labels, 'bold')) #Label do estado qi
+
+                lbl_est_1.place(relx=x_dir_1/lar_pixels_canva_cm + self.marg_lbl_cm, rely = (y_esq_1 + y_dir_1)/(2*alt_pixels_canva_cm), anchor="w") #Posicionando label do estado qi ao lado direito do respectivo círculo de marcação
+                lbl_est_2.place(relx=x_dir_2/lar_pixels_canva_cm + self.marg_lbl_cm, rely = (y_esq_2 + y_dir_2)/(2*alt_pixels_canva_cm), anchor="w") #Posicionando label do estado qi ao lado direito do respectivo círculo de marcação
+                
+                self.coords_cm[0].append((x_esq_1, y_esq_1, x_dir_1, y_dir_1)) #Guardando as coordenadas do círculo de marcação do estado qi (estados de aceitação)
+                self.coords_cm[1].append((x_esq_2, y_esq_2, x_dir_2, y_dir_2)) #Guardando as coordenadas do círculo de marcação do estado qi (estado inicial)
+                self.val_logico_cm[0].append(False) #Inicializando o valor lógico dos circulos de marcação (estados de aceitação)
+                self.val_logico_cm[1].append(False) #Inicializando o valor lógico dos circulos de marcação (estado inicial)
 
         self.canva_cm.bind("<Button-1>", self.SelecionarCB) #Ação de seleção do círculo de marcação
 
@@ -314,7 +302,7 @@ class Interface:
 
     def Ler_tabela(self,*args):
 
-        tab_val_func = []
+        self.tab_val_func = []
 
         for i in range(len(self.tab_str_var)):
 
@@ -328,37 +316,117 @@ class Interface:
 
                 try:
 
-                    #Se o dado inserido numa determinada célula da tabela for um estado, ele é guardado
+                    #Se não há dado inserido na célula, a string vazia é guardada
 
-                    if val_func in self.lista_ests or val_func=='': lin_val_func.append(val_func)
-
-                    #Caso contrário poderão ocorrer os seguintes erros
+                    if val_func=='' or val_func in self.lista_ests: lin_val_func.append(val_func)
 
                     else: 
-                        
-                        #Erro 1: se o dado inserido não for a letra q seguida de um número
 
-                        if val_func[0]!='q' or (len(val_func)>1 and not val_func[1:len(val_func)].isdigit()): 
+                        lin_val_func.append('')
+
+                        #Erro 2: se o dado inserido não for a letra q seguida de um número
+
+                        if val_func[0]!='q' or (len(val_func)>1 and not val_func[1:].isdigit()): 
 
                             self.tab_entry[i][j].delete(0, tk.END)
 
                             raise ValueError("os estados devem ser compostos pela letra ""q"" seguida de um número!")
                         
-                        #Erro 2: se o dado corresponder a um estado inexistente
+                        #Erro 3: se o dado corresponder a um estado inexistente
 
-                        if len(val_func)>1 and val_func[1:len(val_func)].isdigit() and int(val_func[1:len(val_func)])>=self.num_ests: 
+                        if len(val_func)>1 and val_func[1:len(val_func)].isdigit() and int(val_func[1:])>=self.num_ests: 
 
                             self.tab_entry[i][j].delete(0, tk.END)
 
-                            raise ValueError("estado não existente! Os estados são de " + str(self.lista_ests[0]) + " até " + str(self.lista_ests[-1]))
-
+                            raise ValueError("estado não existente! Os estados são de " + self.lista_ests[0] + " até " + self.lista_ests[-1])
+                
                 except ValueError as ve: messagebox.showerror("Erro", f"Entrada incorreta: {ve}") #Exibe o alerta de erro na tela
 
-            tab_val_func.append(lin_val_func)
+            self.tab_val_func.append(lin_val_func)
 
-        #if '' not in list(chain(*tab_val_func)): self.Diagrama()
+        self.tab_val_func_ant = self.tab_val_func.copy()
 
-        self.tab_val_func_ant = tab_val_func.copy()
+        if '' in chain(*self.tab_val_func): self.Diagrama()
+        else: 
+            
+            est_conect = self.Ler_Tabela_2()
+
+            try:
+
+                if len(est_conect)==self.num_ests: self.Diagrama()
+                else:
+                    
+                    for i in range(self.num_ests):
+                        for j in range(len(self.lista_alfa)): self.tab_entry[i][j].delete(0,tk.END)
+
+                    self.canva_diagrama.delete("all")
+
+                    raise ValueError("os estados devem estar num único grafo!")
+
+            except ValueError as ve: messagebox.showerror("Erro", f"Entrada incorreta: {ve}") #Exibe o alerta de erro na tela
+
+    def Ler_Tabela_2(self):
+
+        grupo_ests_lig = self.Map_est(self.lista_ests[0])['fonte'] + self.Map_est(self.lista_ests[0])['alvo']
+        grupos_nlig = []
+
+        for est in self.lista_ests[1:]:
+
+            ests_lig = self.Map_est(est)['fonte'] + self.Map_est(est)['alvo']
+            lista_grupos_nlig = list(chain(*grupos_nlig))
+
+            if est in grupo_ests_lig and Counter(lista_grupos_nlig)[est]==len(grupos_nlig): grupo_ests_lig = grupo_ests_lig + lista_grupos_nlig + ests_lig
+            else: 
+                
+                if est in lista_grupos_nlig: grupos_nlig = [lista if est not in lista else lista + ests_lig for lista in grupos_nlig]
+                else: grupos_nlig.append(ests_lig)
+
+        return sorted(list(set(grupo_ests_lig)))
+    
+    def Ciclos(self): 
+
+        list_comb_ests = []
+        lista_ciclos = []
+
+        for i in range(3, self.num_ests+1):
+
+            lista_pos_est = [pos for pos in range(0,i)]
+            list_comb_ests.append([self.lista_ests[pos] for pos in lista_pos_est])
+            j=-1
+
+            while lista_pos_est[0]<self.num_ests-i:
+
+                if lista_pos_est[j]<self.num_ests+j: 
+                    
+                    lista_pos_est[j] = lista_pos_est[j]+1
+
+                    if j<-1: 
+                        
+                        lista_pos_est[j+1] = lista_pos_est[j]+1
+                        j+=1
+
+                    list_comb_ests.append([self.lista_ests[pos] for pos in lista_pos_est])
+
+                else:
+ 
+                    if j>-self.num_ests: j-=1
+
+        for comb_ests in list_comb_ests:
+
+            list_grupo_ests_lig = []
+
+            for est in comb_ests: 
+                
+                grupo_ests_lig = self.Map_est(est)['fonte'] + self.Map_est(est)['alvo']
+
+                if est in grupo_ests_lig: grupo_ests_lig.remove(est)
+
+                list_grupo_ests_lig = list_grupo_ests_lig + grupo_ests_lig
+
+            if any(Counter(list_grupo_ests_lig)[est]<2 for est in comb_ests): lista_ciclos = lista_ciclos + []
+            else: lista_ciclos = lista_ciclos + [comb_ests]
+
+        return lista_ciclos
 
     def Auto_preencher_tab(self):
 
@@ -425,5 +493,82 @@ class Interface:
                 espaçamento = 5.49
 
                 self.canva_cm.create_oval(centro_cb_x - espaçamento, centro_cb_y - espaçamento, centro_cb_x + espaçamento, centro_cb_y + espaçamento, outline="black", width=0, fill="black") #e o círculo interno é criado com uma margem especificada
+
+    def Map_est(self, est):
+
+        est_font = []
+
+        for i in range(len(self.tab_val_func)):
+
+            if i==self.lista_ests.index(est): est_alvo = sorted(list(set([j for j in self.tab_val_func[i] if j!=''])))
+            else: 
+                
+                if est in self.tab_val_func[i]: est_font = list(set(est_font + [self.lista_ests[i]]))
+
+        return {'fonte': est_font, 'alvo': est_alvo}
+
+    def Diagrama(self):
+        
+        lar_pixels_cv_diag = self.lar_pixels_jan*0.703 #Largura do canva do diagrama em pixels
+        alt_pixels_cv_diag = self.alt_pixels_jan #Altura do canva do diagrama em pixels
+
+        self.canva_diagrama = Canvas(self.frame_diag, width=lar_pixels_cv_diag, height=alt_pixels_cv_diag, bg=self.cor_frames, highlightthickness=0)
+        self.canva_diagrama.place(relx=0, rely=0)
+
+        ciclos = {}
+        lista_ciclos_max = []
+        i=0
+
+        for ciclo in self.Ciclos():
+
+            if len(ciclo) in list(ciclos.keys()): ciclos[len(ciclo)].append(ciclo)
+            else: ciclos.update({len(ciclo): [ciclo]})
+
+        print(f"\n inicial {ciclos} : ")
+
+        while ciclos:
+
+            lista_num_ests = list(ciclos.keys())
+            max_num_ests = max(lista_num_ests)
+
+            if ciclos[max_num_ests]: 
+                
+                ciclo_max = ciclos[max_num_ests].pop(-1)
+                lista_ciclos_max.append(ciclo_max)
+
+                for num_ests in lista_num_ests:
+
+                    for ciclo in ciclos[num_ests]:
+
+                        if list(set(ciclo + ciclo_max))==ciclo_max: 
+                            
+                            if ciclos[num_ests]: ciclos[num_ests].remove(ciclo)
+                            else: del(ciclos[num_ests])
+
+            else: del(ciclos[max_num_ests])
+
+        print(f"{lista_ciclos_max}")
+
+        for ciclo_max in self.Ciclos():
+
+            x_cent_ciclo, y_cent_ciclo = lar_pixels_cv_diag/2, alt_pixels_cv_diag/2 #Coordenadas do centro do ciclo
+            dist_cent_ciclo_est = 100 #Distância padrão em pixels entre os centros do ciclo e dos estados
+
+            for i in range(len(ciclo_max)):
+
+                x_est_1 = int(x_cent_ciclo + dist_cent_ciclo_est*math.cos(math.pi/2*(4*i/len(ciclo_max) - 1)) - self.diam_circ_est_ext/2)
+                y_est_1 = int(y_cent_ciclo + dist_cent_ciclo_est*math.sin(math.pi/2*(4*i/len(ciclo_max) - 1)) - self.diam_circ_est_ext/2)
+
+                x_est_2 = int(x_est_1 + self.diam_circ_est_ext)
+                y_est_2 = int(y_est_1 + self.diam_circ_est_ext)
+
+                centro_x_est = (x_est_1 + x_est_2)/2
+                centro_y_est = (y_est_1 + y_est_2)/2
+
+                self.canva_diagrama.create_oval(x_est_1, y_est_1, x_est_2, y_est_2, outline=self.cor_circ_est, width=4, fill=self.cor_frames)
+                self.canva_diagrama.create_oval(centro_x_est - self.diam_circ_est_int, centro_y_est - self.diam_circ_est_int, centro_x_est + self.diam_circ_est_int, centro_y_est + self.diam_circ_est_int, outline=self.cor_circ_est, width=4, fill=self.cor_frames)
+
+                lbl_est_circ = Label(self.canva_diagrama, text=ciclo_max[i], bd=0, bg=self.cor_frames, fg=self.cor_labels, font=(self.font_labels, self.tam_lbl_est_circ, 'bold'))
+                lbl_est_circ.place(relx=centro_x_est/lar_pixels_cv_diag, rely = centro_y_est/alt_pixels_cv_diag, anchor='center')
 
 interface = Interface().Widgets_Input_1()
